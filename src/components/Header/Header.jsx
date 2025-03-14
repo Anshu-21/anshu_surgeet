@@ -99,7 +99,7 @@ function Header({ toggleSidebar }) {
             </div>
           </div>
 
-          <div className="hidden lg:flex flex-1 mx-8 relative items-center">
+          <div className="lg:flex flex-1 mx-8 relative items-center">
             <SearchBox
               query={query}
               setQuery={setQuery}
