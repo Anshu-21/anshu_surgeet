@@ -11,14 +11,14 @@ const uploadRecording = async (file, metadata) => {
   console.log('Uploading with metadata:', metadata);
   try {
     const response = await storage.createFile(
-      '67d0114a000cc7efe097',
+      conf.appwriteBucketId,
       'unique()',
       file
     );
 
     await databases.createDocument(
-      '6777dcf30030191a36ec',
-      '6777de770002c58af978',
+      conf.appwriteDatabaseId,
+      conf.appwriteRecordingsCollectionId,
       'unique()',
       {
         recording_name: metadata.recording_name,
@@ -44,8 +44,8 @@ const listRecordings = async (userId = null, visibility = null) => {
     }
 
     const response = await databases.listDocuments(
-      '6777dcf30030191a36ec',
-      '6777de770002c58af978',
+      conf.appwriteDatabaseId,
+      conf.appwriteRecordingsCollectionId,
       query
     );
 
@@ -60,14 +60,14 @@ const uploadSong = async (file, metadata) => {
   console.log('Uploading with metadata:', metadata);
   try {
     const response = await storage.createFile(
-      '67d0114a000cc7efe097',
+      conf.appwriteBucketId,
       'unique()',
       file
     );
 
     await databases.createDocument(
-      '6777dcf30030191a36ec',
-      '67b49cec003173bfcdc5',
+      conf.appwriteDatabaseId,
+      conf.appwriteTracksCollectionId,
       'unique()',
       {
         song_name: metadata.recording_name,
@@ -92,8 +92,8 @@ const listSongs = async (userId = null, visibility = null) => {
       query.push(Query.equal('uploaded_by', userId));
     }
     const response = await databases.listDocuments(
-      '6777dcf30030191a36ec',
-      '67b49cec003173bfcdc5',
+      conf.appwriteDatabaseId,
+      conf.appwriteTracksCollectionId,
       query
     );
 
@@ -106,7 +106,7 @@ const listSongs = async (userId = null, visibility = null) => {
 
 const fetchFiles = async () => {
   try {
-    const response = await storage.listFiles('67d0114a000cc7efe097');
+    const response = await storage.listFiles(conf.appwriteBucketId);
     return response;
   } catch (error) {
     console.error('Error fetching files:', error);
@@ -117,8 +117,8 @@ const fetchFiles = async () => {
 const createPlaylist = async (userId, name, description) => {
   try {
     const response = await databases.createDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       'unique()',
       {
         playlist_name: name,
@@ -136,8 +136,8 @@ const createPlaylist = async (userId, name, description) => {
 const getUserPlaylists = async (userId) => {
   try {
     const response = await databases.listDocuments(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       [Query.equal('user_id', userId)]
     );
     return response.documents;
@@ -150,16 +150,16 @@ const getUserPlaylists = async (userId) => {
 const addSongToPlaylist = async (playlistId, trackId) => {
   try {
     const playlist = await databases.getDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       playlistId
     );
 
     const updatedTracks = [...playlist.track_ids, trackId];
 
     await databases.updateDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       playlistId,
       { track_ids: updatedTracks }
     );
@@ -173,8 +173,8 @@ const addSongToPlaylist = async (playlistId, trackId) => {
 const getPlaylistTracks = async (playlistId) => {
   try {
     const playlist = await databases.getDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       playlistId
     );
 
@@ -187,8 +187,8 @@ const getPlaylistTracks = async (playlistId) => {
 
     const trackPromises = playlist.track_ids.map((trackId) =>
       databases.getDocument(
-        '6777dcf30030191a36ec',
-        '67b49cec003173bfcdc5',
+        conf.appwriteDatabaseId,
+        conf.appwriteTracksCollectionId,
         trackId
       )
     );
@@ -212,16 +212,16 @@ const getPlaylistTracks = async (playlistId) => {
 const removeTrackFromPlaylist = async (playlistId, trackId) => {
   try {
     const playlist = await databases.getDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       playlistId
     );
 
     const updatedTrackIds = playlist.track_ids.filter((id) => id !== trackId);
 
     await databases.updateDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       playlistId,
       {
         track_ids: updatedTrackIds,
@@ -241,8 +241,8 @@ const removeTrackFromPlaylist = async (playlistId, trackId) => {
 const deletePlaylist = async (playlistId) => {
   try {
     await databases.deleteDocument(
-      '6777dcf30030191a36ec',
-      '67d04914003c7f6c08f6',
+      conf.appwriteDatabaseId,
+      conf.appwritePlaylistsCollectionId,
       playlistId
     );
     console.log('Playlist deleted successfully');
