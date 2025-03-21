@@ -8,7 +8,6 @@ export const databases = new Databases(client);
 const storage = new Storage(client);
 
 const uploadRecording = async (file, metadata) => {
-  console.log('Uploading with metadata:', metadata);
   try {
     const response = await storage.createFile(
       conf.appwriteBucketId,
@@ -57,7 +56,6 @@ const listRecordings = async (userId = null, visibility = null) => {
 };
 
 const uploadSong = async (file, metadata) => {
-  console.log('Uploading with metadata:', metadata);
   try {
     const response = await storage.createFile(
       conf.appwriteBucketId,
@@ -104,15 +102,15 @@ const listSongs = async (userId = null, visibility = null) => {
   }
 };
 
-const fetchFiles = async () => {
-  try {
-    const response = await storage.listFiles(conf.appwriteBucketId);
-    return response;
-  } catch (error) {
-    console.error('Error fetching files:', error);
-    throw error;
-  }
-};
+// const fetchFiles = async () => {
+//   try {
+//     const response = await storage.listFiles(conf.appwriteBucketId);
+//     return response;
+//   } catch (error) {
+//     console.error('Error fetching files:', error);
+//     throw error;
+//   }
+// };
 
 const createPlaylist = async (userId, name, description) => {
   try {
@@ -251,19 +249,14 @@ const deletePlaylist = async (playlistId) => {
   }
 };
 
-const searchSong = async (query) => {
+export const searchSong = async (query) => {
   const url = `https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`;
 
   try {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (
-      !data ||
-      !data.data ||
-      !data.data.results ||
-      data.data.results.length === 0
-    ) {
+    if (!data || !data.data || !data.data.results || data.data.results.length === 0) {
       return [];
     }
 
@@ -275,10 +268,11 @@ const searchSong = async (query) => {
       downloadUrl: song.downloadUrl || [],
     }));
   } catch (error) {
-    console.error('Error fetching song:', error);
+    console.error("Error fetching song:", error);
     return [];
   }
 };
+
 
 const getSongDetails = async (songId) => {
   const url = `https://saavn.dev/api/songs?id=${songId}`;
@@ -296,7 +290,7 @@ export default {
   storage,
   uploadRecording,
   listRecordings,
-  fetchFiles,
+  // fetchFiles,
   listSongs,
   uploadSong,
   createPlaylist,

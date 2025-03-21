@@ -1,58 +1,27 @@
-import { React, useEffect } from 'react';
+import { React } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import service from '../appwrite/config';
-import { useMusic } from '../components/MusicContext';
 
-const SearchBox = ({ query, setQuery, songs = [], setSongs }) => {
-  const { playSong } = useMusic();
+const SearchBox = ({ query, setQuery }) => {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      if (!query.trim()) {
-        setSongs([]);
-        return;
+  const handleSearchSubmit = async () => {
+    if (!query.trim()) return;
+    try {
+      const results = await service.searchSong(query);
+      if (Array.isArray(results) && results.length > 0) {
+        navigate('/search-results', { state: { songs: results } });
       }
-      try {
-        const results = await service.searchSong(query);
-        setSongs(Array.isArray(results) ? results : []);
-      } catch (error) {
-        console.error('Error fetching songs:', error);
-        setSongs([]);
-      }
-    };
-    const debounce = setTimeout(fetchResults, 500);
-    return () => clearTimeout(debounce);
-  }, [query, setSongs]);
-
-  const handleSelectSong = (song) => {
-    if (
-      !song ||
-      !Array.isArray(song.downloadUrl) ||
-      song.downloadUrl.length === 0
-    ) {
-      console.error('No download URL found!', song);
-      return;
+    } catch (error) {
+      console.error('Error fetching songs:', error);
     }
-    const mp3Url =
-      song.downloadUrl.find((item) => item.quality === '320kbps')?.url ||
-      song.downloadUrl.find((item) => item.quality === '160kbps')?.url ||
-      song.downloadUrl.find((item) => item.quality === '96kbps')?.url ||
-      song.downloadUrl[0]?.url;
+  };
 
-    if (!mp3Url) {
-      console.error('No valid MP3 URL found!', song.downloadUrl);
-      return;
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSearchSubmit();
     }
-
-    console.log('Playing song:', mp3Url);
-
-    playSong({
-      id: song.id,
-      title: song.name,
-      artist: song.primaryArtists || 'Unknown Artist',
-      image: song.image[2]?.url || song.image[0]?.url,
-      url: mp3Url,
-    });
   };
 
   return (
@@ -64,6 +33,7 @@ const SearchBox = ({ query, setQuery, songs = [], setSongs }) => {
           className="w-full px-4 py-2 bg-transparent text-white focus:outline-none"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyPress}
         />
 
         {query && (
@@ -75,34 +45,13 @@ const SearchBox = ({ query, setQuery, songs = [], setSongs }) => {
           </button>
         )}
 
-        <button className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+        <button
+          onClick={handleSearchSubmit}
+          className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+        >
           <FaSearch size={16} />
         </button>
       </div>
-
-      {songs.length > 0 && (
-        <ul className="absolute w-full bg-gray-900 text-white border border-gray-700 rounded-lg mt-2 max-h-60 overflow-y-auto shadow-lg z-50">
-          {songs.map((song) => (
-            <li
-              key={song.id}
-              className="flex items-center gap-3 p-2 hover:bg-gray-700 cursor-pointer"
-              onClick={() => handleSelectSong(song)}
-            >
-              <img
-                src={
-                  song.image[2]?.url ||
-                  song.image[0]?.url ||
-                  '/default-image.jpg'
-                }
-                alt={song.name}
-                className="w-10 h-10 rounded-md"
-              />
-
-              <span className="truncate">{song.name}</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };

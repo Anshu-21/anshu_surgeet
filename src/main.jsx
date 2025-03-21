@@ -17,6 +17,7 @@ import Player from './pages/Player.jsx';
 import AddList from './pages/AddList.jsx';
 import { AudioProvider } from './components/AudioProvider.jsx';
 import { MusicProvider } from './components/MusicContext.jsx';
+import SearchResults from './pages/SearchPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
         path: '/',
         element: <Home />,
       },
+      { path: '/search-results', element: <SearchResults /> },
       {
         path: '/login',
         element: (
